@@ -1,0 +1,123 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: educrm
+      POSTGRES_USER: educrm_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-educrm_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U educrm_user -d educrm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py makemigrations students groups courses payments attendance sms telegram_bot &&
+             python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 2"
+    volumes:
+      - ./backend:/app
+      - media_files:/app/media
+      - static_files:/app/static
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/schema/ || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker -l info -Q default,sms,payments --concurrency=4
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  telegram_bot:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python manage.py run_bot
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_files:
+  static_files:
