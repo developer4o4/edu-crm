@@ -52,11 +52,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/schema/ || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost', 8000)); s.close()\""]
       interval: 15s
       timeout: 10s
-      retries: 10
-      start_period: 60s
+      retries: 5
+      start_period: 30s
 
   celery_worker:
     build:
@@ -114,6 +114,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
     restart: unless-stopped
 
 volumes:

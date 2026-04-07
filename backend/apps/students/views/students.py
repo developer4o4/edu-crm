@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 
-from apps.students.models import Student, Teacher
+from apps.students.models import Student, Teacher, User
 from apps.students.serializers import (
     StudentSerializer, StudentDetailSerializer,
     StudentCreateSerializer, TeacherSerializer
@@ -14,18 +14,38 @@ from apps.students.serializers import (
 from utils.permissions import IsAdminOrReadOnly, IsAdminUser
 
 
+def create_student_user(student):
+    """
+    O'quvchi uchun avtomatik User yaratish.
+    Username: telefon raqami (+ belgisisiz)
+    Parol: telefon oxirgi 4 raqami
+    """
+    # Username: +998901234567 -> 998901234567
+    username = student.phone.replace('+', '').replace(' ', '')
+    # Parol: oxirgi 4 raqam -> 4567
+    password = username[-4:]
+
+    # Agar bu username allaqachon bor bo'lsa, yangilamaymiz
+    if User.objects.filter(username=username).exists():
+        existing_user = User.objects.get(username=username)
+        if not hasattr(existing_user, 'student_profile'):
+            student.user = existing_user
+            student.save()
+        return existing_user, password
+
+    user = User.objects.create_user(
+        username=username,
+        password=password,
+        first_name=student.first_name,
+        last_name=student.last_name,
+        role=User.Role.STUDENT,
+    )
+    student.user = user
+    student.save()
+    return user, password
+
+
 class StudentViewSet(viewsets.ModelViewSet):
-    """
-    O'quvchilar CRUD + qo'shimcha endpointlar
-    GET    /api/v1/students/           - ro'yxat
-    POST   /api/v1/students/           - yangi qo'shish
-    GET    /api/v1/students/{id}/      - batafsil
-    PUT    /api/v1/students/{id}/      - tahrirlash
-    DELETE /api/v1/students/{id}/      - o'chirish
-    GET    /api/v1/students/{id}/payments/   - to'lovlar
-    GET    /api/v1/students/{id}/attendance/ - davomat
-    POST   /api/v1/students/{id}/add_to_group/ - guruhga qo'shish
-    """
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'group_memberships__group']
@@ -38,8 +58,6 @@ class StudentViewSet(viewsets.ModelViewSet):
             'group_memberships__group__course',
             'group_memberships__group__teacher',
         )
-
-        # Filter: faqat qarzdorlar
         if self.request.query_params.get('debtors_only') == 'true':
             today = timezone.now().date()
             paid_ids = __import__('apps.payments.models', fromlist=['Payment']).Payment.objects.filter(
@@ -51,7 +69,6 @@ class StudentViewSet(viewsets.ModelViewSet):
                 status=Student.Status.ACTIVE,
                 group_memberships__is_active=True,
             ).exclude(id__in=paid_ids).distinct()
-
         return qs
 
     def get_serializer_class(self):
@@ -61,16 +78,38 @@ class StudentViewSet(viewsets.ModelViewSet):
             return StudentDetailSerializer
         return StudentSerializer
 
+    def perform_create(self, serializer):
+        """O'quvchi qo'shilganda avtomatik User yaratish"""
+        student = serializer.save()
+        user, password = create_student_user(student)
+
+        # SMS orqali login/parol yuborish
+        try:
+            from apps.sms.models import send_sms_and_log, SMSLog
+            username = student.phone.replace('+', '').replace(' ', '')
+            message = (
+                f"Hurmatli {student.first_name}, EduCRM tizimiga xush kelibsiz!\n"
+                f"Login: {username}\n"
+                f"Parol: {password}\n"
+                f"Sayt: localhost:5173"
+            )
+            send_sms_and_log(
+                phone=student.phone,
+                message=message,
+                sms_type=SMSLog.SMSType.WELCOME,
+                student=student,
+                sent_by=self.request.user,
+            )
+        except Exception:
+            pass  # SMS xatosi bo'lsa ham o'quvchi yaratiladi
+
     @action(detail=True, methods=['get'])
     def payments(self, request, pk=None):
-        """O'quvchining to'lovlar tarixi"""
         from apps.payments.models import Payment
         from apps.payments.serializers import PaymentListSerializer
 
         student = self.get_object()
         payments = Payment.objects.filter(student=student).order_by('-created_at')
-
-        # Summary
         total_paid = payments.filter(status=Payment.Status.PAID).aggregate(
             total=Sum('amount'))['total'] or 0
 
@@ -81,7 +120,6 @@ class StudentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def attendance(self, request, pk=None):
-        """O'quvchining davomat statistikasi"""
         from apps.attendance.models import Attendance
 
         student = self.get_object()
@@ -92,8 +130,6 @@ class StudentViewSet(viewsets.ModelViewSet):
         absent = records.filter(status='absent').count()
         late = records.filter(status='late').count()
 
-        # By group
-        from apps.groups.models import Group
         by_group = []
         for membership in student.group_memberships.filter(is_active=True):
             group = membership.group
@@ -119,9 +155,9 @@ class StudentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def add_to_group(self, request, pk=None):
-        """O'quvchini guruhga qo'shish"""
+        """O'quvchini guruhga qo'shish + login/parol SMS yuborish"""
         from apps.groups.models import Group, GroupMembership
-        from apps.sms.models import send_sms_and_log, SMSLog, welcome_message
+        from apps.sms.models import send_sms_and_log, SMSLog
 
         student = self.get_object()
         group_id = request.data.get('group_id')
@@ -145,21 +181,45 @@ class StudentViewSet(viewsets.ModelViewSet):
         if not created:
             return Response({'error': 'O\'quvchi bu guruhda allaqachon bor'}, status=400)
 
-        # Welcome SMS
+        # User yo'q bo'lsa yaratish
+        if not student.user:
+            user, password = create_student_user(student)
+        else:
+            username = student.phone.replace('+', '').replace(' ', '')
+            password = username[-4:]
+
+        # Login/parol + xush kelibsiz SMS
+        username = student.phone.replace('+', '').replace(' ', '')
+        password = username[-4:]
+
+        message = (
+            f"Hurmatli {student.first_name}, {group.name} guruhiga xush kelibsiz!\n"
+            f"Tizimga kirish uchun:\n"
+            f"Login: {username}\n"
+            f"Parol: {password}\n"
+            f"O'quv markaz bilan muloqot: +998901234567"
+        )
+
         send_sms_and_log(
             phone=student.phone,
-            message=welcome_message(student.first_name, group.name),
+            message=message,
             sms_type=SMSLog.SMSType.WELCOME,
             student=student,
             group=group,
             sent_by=request.user,
         )
 
-        return Response({'success': True, 'message': f"{student.full_name} {group.name} guruhiga qo'shildi"})
+        return Response({
+            'success': True,
+            'message': f"{student.full_name} {group.name} guruhiga qo'shildi",
+            'credentials': {
+                'username': username,
+                'password': password,
+            }
+        })
 
     @action(detail=True, methods=['post'])
     def remove_from_group(self, request, pk=None):
-        """Guruhdan chiqarish"""
         from apps.groups.models import GroupMembership
 
         student = self.get_object()
