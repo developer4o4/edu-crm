@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, BookOpen, CreditCard, ClipboardCheck, BarChart3, MessageSquare, LogOut, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, Users, BookOpen, CreditCard, ClipboardCheck, BarChart3, MessageSquare, LogOut, GraduationCap, Library } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import toast from 'react-hot-toast'
 
@@ -11,6 +11,7 @@ const NAV = [
   { to: '/attendance', icon: ClipboardCheck, label: 'Davomat' },
   { to: '/reports', icon: BarChart3, label: 'Hisobotlar' },
   { to: '/sms', icon: MessageSquare, label: 'SMS' },
+  { to: '/courses', icon: Library, label: 'Kurslar' },
 ]
 
 export default function Layout() {

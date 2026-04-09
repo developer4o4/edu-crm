@@ -10,12 +10,15 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
-    watch: {
-      usePolling: true,
+    allowedHosts: ['dev-platform.uz', 'localhost', '127.0.0.1'],
+    hmr: {
+      host: 'dev-platform.uz',
+      protocol: 'wss',
+      clientPort: 443,
     },
     proxy: {
-      '/api': { target: 'http://backend:8000', changeOrigin: true },
-      '/payme': { target: 'http://backend:8000', changeOrigin: true },
+      '/api': { target: 'http://localhost:8000', changeOrigin: true },
+      '/payme': { target: 'http://localhost:8000', changeOrigin: true },
     }
   },
   build: {

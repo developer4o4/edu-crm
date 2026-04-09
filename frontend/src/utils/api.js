@@ -79,6 +79,7 @@ api.interceptors.response.use(
 )
 
 export const authAPI = {
+  myStudentProfile: () => api.get('/auth/me/student/'),
   login: (credentials) => api.post('/auth/login/', credentials),
   logout: (refresh) => api.post('/auth/logout/', { refresh }),
   me: () => api.get('/auth/me/'),
@@ -116,6 +117,7 @@ export const coursesAPI = {
   list: (params) => api.get('/courses/', { params }),
   create: (data) => api.post('/courses/', data),
   update: (id, data) => api.patch(`/courses/${id}/`, data),
+  delete: (id) => api.delete(`/courses/${id}/`),
 }
 
 export const paymentsAPI = {
