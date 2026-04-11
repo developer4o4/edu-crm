@@ -6,7 +6,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 const api = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json'  },
   timeout: 15000,
 })
 
@@ -79,6 +79,7 @@ api.interceptors.response.use(
 )
 
 export const authAPI = {
+  myStudentProfile: () => api.get('/auth/me/student/'),
   login: (credentials) => api.post('/auth/login/', credentials),
   logout: (refresh) => api.post('/auth/logout/', { refresh }),
   me: () => api.get('/auth/me/'),

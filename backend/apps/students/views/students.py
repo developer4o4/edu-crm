@@ -83,16 +83,11 @@ class StudentViewSet(viewsets.ModelViewSet):
         student = serializer.save()
         user, password = create_student_user(student)
 
-        # SMS orqali login/parol yuborish
+        # SMS orqali login/parol yuborish4
         try:
             from apps.sms.models import send_sms_and_log, SMSLog
             username = student.phone.replace('+', '').replace(' ', '')
-            message = (
-                f"Hurmatli {student.first_name}, EduCRM tizimiga xush kelibsiz!\n"
-                f"Login: {username}\n"
-                f"Parol: {password}\n"
-                f"Sayt: localhost:5173"
-            )
+            message = f"{student.first_name} {student.last_name} Smartcoders o'quv markaziga hush kelibsiz. Platformani foydalanish uchun Login: {username} Parol: {password} Sayt: dev-platform.uz"
             send_sms_and_log(
                 phone=student.phone,
                 message=message,
@@ -191,14 +186,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         # Login/parol + xush kelibsiz SMS
         username = student.phone.replace('+', '').replace(' ', '')
         password = username[-4:]
-
-        message = (
-            f"Hurmatli {student.first_name}, {group.name} guruhiga xush kelibsiz!\n"
-            f"Tizimga kirish uchun:\n"
-            f"Login: {username}\n"
-            f"Parol: {password}\n"
-            f"O'quv markaz bilan muloqot: +998901234567"
-        )
+        message = f"{student.first_name} {student.last_name} Smartcoders o'quv markaziga hush kelibsiz. Platformani foydalanish uchun Login: {username} Parol: {password} Sayt: dev-platform.uz "
+        print("sms ketti")
 
         send_sms_and_log(
             phone=student.phone,
@@ -208,6 +197,7 @@ class StudentViewSet(viewsets.ModelViewSet):
             group=group,
             sent_by=request.user,
         )
+        print(send_sms_and_log)
 
         return Response({
             'success': True,

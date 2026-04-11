@@ -71,7 +71,10 @@ function AttendanceMarker({ session, onClose, onSave }) {
                 <div style={{width:'30px',height:'30px',borderRadius:'50%',background:'#e1f5ee',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:'600',color:'#0f6e56',flexShrink:0}}>
                   {m.full_name?.[0]}
                 </div>
-                <span style={{flex:1,fontSize:'13px',fontWeight:'500',color:'#111827'}}>{m.full_name}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:'13px',fontWeight:'500',color:'#111827'}}>{m.full_name}</div>
+                  {m.phone&&<a href={`tel:${m.phone}`} style={{fontSize:'11px',color:'#1D9E75',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'3px',marginTop:'1px'}}>📞 {m.phone}</a>}
+                </div>
                 <div style={{display:'flex',gap:'4px'}}>
                   {Object.entries(statusCfg).map(([st,cfg])=>(
                     <button key={st} onClick={()=>setS(m.id,st)} style={{

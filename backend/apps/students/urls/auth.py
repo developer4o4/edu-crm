@@ -8,3 +8,8 @@ urlpatterns = [
     path('me/', MeView.as_view(), name='auth-me'),
     path('change-password/', ChangePasswordView.as_view(), name='auth-change-password'),
 ]
+
+from apps.students.views.auth import MyStudentProfileView
+urlpatterns += [
+    path('me/student/', MyStudentProfileView.as_view(), name='my-student-profile'),
+]
