@@ -1,11 +1,12 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, BookOpen, CreditCard, ClipboardCheck, BarChart3, MessageSquare, LogOut, GraduationCap, Library } from 'lucide-react'
+import { LayoutDashboard, Users, BookOpen, CreditCard, ClipboardCheck, BarChart3, MessageSquare, LogOut, GraduationCap, Library, UserCheck } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import toast from 'react-hot-toast'
 
 const NAV = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/students', icon: Users, label: "O'quvchilar" },
+  { to: '/teachers', icon: UserCheck, label: "O'qituvchilar" },
   { to: '/groups', icon: BookOpen, label: 'Guruhlar' },
   { to: '/payments', icon: CreditCard, label: "To'lovlar" },
   { to: '/attendance', icon: ClipboardCheck, label: 'Davomat' },

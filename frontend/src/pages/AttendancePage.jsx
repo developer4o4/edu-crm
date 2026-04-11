@@ -103,11 +103,11 @@ export default function AttendancePage() {
   const [groupFilter,setGroupFilter]=useState('')
   const [groups,setGroups]=useState([])
 
-  useEffect(()=>{groupsAPI.list({is_active:true,page_size:100}).then(r=>setGroups(r.data.results||r.data))},[])
+  useEffect(()=>{groupsAPI.list({is_active:true,page_size:100}).then(r=>{const groupsData=r.data.results||r.data;setGroups(Array.isArray(groupsData)?groupsData:[])})},[])
 
   const fetch=async()=>{
     setLoading(true)
-    try{const p={page_size:30};if(groupFilter)p.group=groupFilter;const r=await attendanceAPI.sessions(p);setSessions(r.data.results||r.data)}
+    try{const p={page_size:30};if(groupFilter)p.group=groupFilter;const r=await attendanceAPI.sessions(p);const sessionsData=r.data.results||r.data;setSessions(Array.isArray(sessionsData)?sessionsData:[])}
     catch{toast.error("Yuklanmadi")}finally{setLoading(false)}
   }
 

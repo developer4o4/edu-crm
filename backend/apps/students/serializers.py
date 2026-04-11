@@ -23,6 +23,20 @@ class TeacherSerializer(serializers.ModelSerializer):
         return obj.groups.filter(is_active=True).count()
 
 
+class TeacherCreateSerializer(serializers.ModelSerializer):
+    """O'qituvchi yaratish/tahrirlash uchun serializer"""
+
+    class Meta:
+        model = Teacher
+        fields = ['id', 'first_name', 'last_name', 'phone', 'subject',
+                  'salary', 'salary_type', 'salary_percent', 'is_active']
+
+    def validate_phone(self, value):
+        if Teacher.objects.filter(phone=value).exclude(id=self.instance.id if self.instance else None).exists():
+            raise serializers.ValidationError("Bu telefon raqami allaqachon ro'yxatdan o'tgan")
+        return value
+
+
 class MembershipSerializer(serializers.ModelSerializer):
     group_name = serializers.ReadOnlyField(source='group.name')
     course_name = serializers.ReadOnlyField(source='group.course.name')

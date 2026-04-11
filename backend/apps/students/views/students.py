@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.students.models import Student, Teacher, User
 from apps.students.serializers import (
     StudentSerializer, StudentDetailSerializer,
-    StudentCreateSerializer, TeacherSerializer
+    StudentCreateSerializer, TeacherSerializer, TeacherCreateSerializer
 )
 from utils.permissions import IsAdminOrReadOnly, IsAdminUser
 
@@ -42,6 +42,34 @@ def create_student_user(student):
     )
     student.user = user
     student.save()
+def create_teacher_user(teacher):
+    """
+    O'qituvchi uchun avtomatik User yaratish.
+    Username: telefon raqami (+ belgisisiz)
+    Parol: telefon oxirgi 4 raqami
+    """
+    # Username: +998901234567 -> 998901234567
+    username = teacher.phone.replace('+', '').replace(' ', '')
+    # Parol: oxirgi 4 raqam -> 4567
+    password = username[-4:]
+
+    # Agar bu username allaqachon bor bo'lsa, yangilamaymiz
+    if User.objects.filter(username=username).exists():
+        existing_user = User.objects.get(username=username)
+        if not hasattr(existing_user, 'teacher_profile'):
+            teacher.user = existing_user
+            teacher.save()
+        return existing_user, password
+
+    user = User.objects.create_user(
+        username=username,
+        password=password,
+        first_name=teacher.first_name,
+        last_name=teacher.last_name,
+        role=User.Role.TEACHER,
+    )
+    teacher.user = user
+    teacher.save()
     return user, password
 
 
@@ -51,7 +79,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     filterset_fields = ['status', 'group_memberships__group']
     search_fields = ['first_name', 'last_name', 'phone']
     ordering_fields = ['last_name', 'created_at']
-    ordering = ['last_name']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         qs = Student.objects.all().prefetch_related(
@@ -237,7 +265,35 @@ class StudentViewSet(viewsets.ModelViewSet):
 
 
 class TeacherViewSet(viewsets.ModelViewSet):
-    queryset = Teacher.objects.filter(is_active=True).select_related('user')
-    serializer_class = TeacherSerializer
+    queryset = Teacher.objects.filter(is_active=True).select_related('user').order_by('-created_at')
     permission_classes = [IsAuthenticated, IsAdminUser]
     search_fields = ['first_name', 'last_name', 'phone']
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return TeacherCreateSerializer
+        return TeacherSerializer
+
+    def perform_create(self, serializer):
+        """O'qituvchi qo'shilganda avtomatik User yaratish"""
+        teacher = serializer.save()
+        user, password = create_teacher_user(teacher)
+
+        # SMS orqali login/parol yuborish
+        try:
+            from apps.sms.models import send_sms_and_log, SMSLog
+            message = (
+                f"Hurmatli {teacher.first_name}, EduCRM tizimiga xush kelibsiz!\n"
+                f"Siz o'qituvchi sifatida ro'yxatdan o'tdingiz.\n"
+                f"Login: {user.username}\n"
+                f"Parol: {password}\n"
+                f"Sayt: localhost:5173"
+            )
+            send_sms_and_log(
+                phone=teacher.phone,
+                message=message,
+                sms_type=SMSLog.SMSType.WELCOME,
+                teacher=teacher,
+            )
+        except Exception as e:
+            print(f"SMS yuborishda xato: {e}")

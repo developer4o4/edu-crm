@@ -23,7 +23,8 @@ function AddStudentModal({ groupId, onClose, onAdded }) {
     setLoading(true)
     try {
       const { data } = await studentsAPI.list({ search: q, page_size: 20, status: 'active' })
-      setResults(data.results || data)
+      const resultsData = data.results || data
+      setResults(Array.isArray(resultsData) ? resultsData : [])
     } catch {
       toast.error('Qidirishda xato')
     } finally {

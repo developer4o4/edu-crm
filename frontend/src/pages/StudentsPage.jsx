@@ -95,7 +95,10 @@ export default function StudentsPage() {
   // load groups once
   useEffect(() => {
     groupsAPI.list({ page_size: 100 })
-      .then(({ data }) => setGroups(data.results || data))
+      .then(({ data }) => {
+        const groupsData = data.results || data
+        setGroups(Array.isArray(groupsData) ? groupsData : [])
+      })
       .catch(() => {})
   }, [])
 
@@ -111,7 +114,8 @@ export default function StudentsPage() {
       if (debtors)  p.debtors_only = 'true'
 
       const { data } = await studentsAPI.list(p)
-      setStudents(data.results || data)
+      const studentsData = data.results || data
+      setStudents(Array.isArray(studentsData) ? studentsData : [])
       if (data.count !== undefined)
         setMeta({ count: data.count, total_pages: data.total_pages || 1 })
     } catch {
