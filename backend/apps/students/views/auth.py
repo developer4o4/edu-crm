@@ -105,23 +105,6 @@ class ChangePasswordView(APIView):
         return Response({'message': 'Parol muvaffaqiyatli o\'zgartirildi'})
 
 
-<<<<<<< HEAD
-class MyStudentProfileView(APIView):
-    """O'quvchi o'z profilini olish — login qilgan user ga bog'liq Student"""
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        from apps.students.models import Student
-        from apps.students.serializers import StudentDetailSerializer
-
-        try:
-            student = request.user.student_profile
-        except Student.DoesNotExist:
-            return Response({'error': 'Student profil topilmadi'}, status=404)
-
-        serializer = StudentDetailSerializer(student)
-        return Response(serializer.data)
-=======
 class TokenRefreshView(APIView):
     """Token refresh"""
     permission_classes = [AllowAny]
@@ -138,4 +121,4 @@ class TokenRefreshView(APIView):
             })
         except TokenError:
             return Response({'error': 'Refresh token yaroqsiz'}, status=400)
->>>>>>> recovery-work
+
