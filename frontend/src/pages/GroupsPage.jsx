@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+<<<<<<< HEAD
 import { Plus, Search, Users, Clock, CreditCard, Eye, MessageSquare, Calendar, BookOpen, Pencil, Trash2 } from 'lucide-react'
 import { groupsAPI, coursesAPI } from '../utils/api'
+=======
+import { Plus, Search, Users, Clock, CreditCard, Eye, MessageSquare, Calendar, BookOpen } from 'lucide-react'
+import { groupsAPI, coursesAPI, studentsAPI } from '../utils/api'
+>>>>>>> recovery-work
 import { Btn, Badge, Spinner, PageHeader, Inp, Sel, C } from '../components/ui/UI'
 import Modal from '../components/ui/Modal'
 import toast from 'react-hot-toast'
@@ -9,6 +14,7 @@ import toast from 'react-hot-toast'
 const fmt = n => new Intl.NumberFormat('uz-UZ').format(Math.round(n||0))
 const card = C.card
 
+<<<<<<< HEAD
 function GroupForm({ onSubmit, loading, initial }) {
   const [courses,setCourses]=useState([])
   const [f,setF]=useState(initial ? {
@@ -27,6 +33,59 @@ function GroupForm({ onSubmit, loading, initial }) {
   const s=(k,v)=>setF(p=>({...p,[k]:v}))
   useEffect(()=>{coursesAPI.list({page_size:100}).then(r=>setCourses(r.data.results||r.data))},[])
   const submit=e=>{e.preventDefault();if(!f.name||!f.course||!f.monthly_fee){toast.error("Majburiy maydonlar");return};onSubmit({...f,monthly_fee:Number(f.monthly_fee),payment_day:Number(f.payment_day),max_students:Number(f.max_students)})}
+=======
+
+function GroupForm({ onSubmit, loading }) {
+  const [courses, setCourses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [f, setF] = useState({
+    name: '',
+    course: '',
+    teacher: '',
+    day_type: 'odd',
+    start_time: '09:00:00', // default boshlanish vaqti
+    end_time: '11:00:00',   // default tugash vaqti
+    monthly_fee: '',
+    payment_day: 1,
+    start_date: new Date().toISOString().slice(0,10),
+    max_students: 15,
+    room: ''
+  });
+
+  const s = (k, v) => setF(p => ({ ...p, [k]: v }));
+
+  useEffect(() => {
+    coursesAPI.list({ page_size: 100 })
+      .then(r => setCourses(r.data.results || r.data))
+  }, []);
+
+  useEffect(() => {
+    studentsAPI.teachers()
+      .then(r => setTeachers(r.data.results || r.data))
+  }, []);
+
+  const submit = e => {
+    e.preventDefault();
+
+    if (!f.name || !f.course || !f.monthly_fee) {
+      toast.error("Majburiy maydonlar");
+      return;
+    }
+
+    // HH:MM -> HH:MM:SS
+
+    onSubmit({
+      ...f,
+      teacher: f.teacher || null,
+      start_time: f.start_time + ':00',
+      end_time: f.end_time + ':00',
+      monthly_fee: Number(f.monthly_fee),
+      payment_day: Number(f.payment_day),
+      max_students: Number(f.max_students)
+    });
+  }
+
+>>>>>>> recovery-work
   return (
     <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:'12px'}}>
       <Inp label="Guruh nomi *" placeholder="IT-7, IELTS-3..." value={f.name} onChange={e=>s('name',e.target.value)}/>
@@ -35,12 +94,21 @@ function GroupForm({ onSubmit, loading, initial }) {
           <option value="">Tanlang...</option>
           {courses.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
         </Sel>
+<<<<<<< HEAD
         <Sel label="Dars kunlari" value={f.day_type} onChange={e=>s('day_type',e.target.value)}>
+=======
+        <Sel label="O'qituvchi" value={f.teacher} onChange={e => s('teacher', e.target.value)}>
+          <option value="">Tanlang...</option>
+          {teachers.map(t => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
+        </Sel>
+        <Sel label="Dars kunlari" value={f.day_type} onChange={e => s('day_type', e.target.value)}>
+>>>>>>> recovery-work
           <option value="odd">Toq kunlar (Du,Cho,Ju)</option>
           <option value="even">Juft kunlar (Se,Pa,Sha)</option>
           <option value="daily">Har kuni</option>
           <option value="weekend">Dam olish kunlari</option>
         </Sel>
+<<<<<<< HEAD
         <Inp label="Boshlanish vaqti" type="time" value={f.start_time} onChange={e=>s('start_time',e.target.value)}/>
         <Inp label="Tugash vaqti" type="time" value={f.end_time} onChange={e=>s('end_time',e.target.value)}/>
         <Inp label="Oylik to'lov (UZS) *" type="number" placeholder="500000" value={f.monthly_fee} onChange={e=>s('monthly_fee',e.target.value)} min={0}/>
@@ -48,6 +116,15 @@ function GroupForm({ onSubmit, loading, initial }) {
         <Inp label="Boshlanish sanasi" type="date" value={f.start_date} onChange={e=>s('start_date',e.target.value)}/>
         <Inp label="Max o'quvchilar" type="number" value={f.max_students} onChange={e=>s('max_students',e.target.value)} min={1}/>
         <Inp label="Xona" placeholder="101-xona" value={f.room} onChange={e=>s('room',e.target.value)}/>
+=======
+        <Inp label="Boshlanish vaqti" type="time" value={f.start_time} onChange={e => s('start_time', e.target.value)} />
+        <Inp label="Tugash vaqti" type="time" value={f.end_time} onChange={e => s('end_time', e.target.value)} />
+        <Inp label="Oylik to'lov (UZS) *" type="number" placeholder="500000" value={f.monthly_fee} onChange={e => s('monthly_fee', e.target.value)} min={0} />
+        <Inp label="To'lov sanasi (1-28)" type="number" value={f.payment_day} onChange={e => s('payment_day', e.target.value)} min={1} max={28} />
+        <Inp label="Boshlanish sanasi" type="date" value={f.start_date} onChange={e => s('start_date', e.target.value)} />
+        <Inp label="Max o'quvchilar" type="number" value={f.max_students} onChange={e => s('max_students', e.target.value)} min={1} />
+        <Inp label="Xona" placeholder="101-xona" value={f.room} onChange={e => s('room', e.target.value)} />
+>>>>>>> recovery-work
       </div>
       <div style={{display:'flex',justifyContent:'flex-end',paddingTop:'8px',borderTop:'1px solid #f0f0f0'}}>
         <Btn type="submit" primary disabled={loading}>{loading?'Yaratilmoqda...':'Guruh yaratish'}</Btn>

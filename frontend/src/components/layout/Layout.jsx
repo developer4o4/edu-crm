@@ -1,16 +1,18 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, BookOpen, CreditCard, ClipboardCheck, BarChart3, MessageSquare, LogOut, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, Users, BookOpen, CreditCard, ClipboardCheck, BarChart3, MessageSquare, LogOut, GraduationCap, Library, UserCheck } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import toast from 'react-hot-toast'
 
 const NAV = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/students', icon: Users, label: "O'quvchilar" },
-  { to: '/groups', icon: BookOpen, label: 'Guruhlar' },
-  { to: '/payments', icon: CreditCard, label: "To'lovlar" },
-  { to: '/attendance', icon: ClipboardCheck, label: 'Davomat' },
-  { to: '/reports', icon: BarChart3, label: 'Hisobotlar' },
-  { to: '/sms', icon: MessageSquare, label: 'SMS' },
+  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
+  { to: '/admin/students', icon: Users, label: "O'quvchilar" },
+  { to: '/admin/teachers', icon: UserCheck, label: "O'qituvchilar" },
+  { to: '/admin/groups', icon: BookOpen, label: 'Guruhlar' },
+  { to: '/admin/payments', icon: CreditCard, label: "To'lovlar" },
+  { to: '/admin/attendance', icon: ClipboardCheck, label: 'Davomat' },
+  { to: '/admin/reports', icon: BarChart3, label: 'Hisobotlar' },
+  { to: '/admin/sms', icon: MessageSquare, label: 'SMS' },
+  { to: '/admin/courses', icon: Library, label: 'Kurslar' },
 ]
 
 export default function Layout() {

@@ -114,7 +114,16 @@ export default function StudentsPage() {
   const [page,     setPage]     = useState(1)
 
   useEffect(() => {
+<<<<<<< HEAD
     groupsAPI.list({ page_size: 100 }).then(({ data }) => setGroups(data.results || data)).catch(() => {})
+=======
+    groupsAPI.list({ page_size: 100 })
+      .then(({ data }) => {
+        const groupsData = data.results || data
+        setGroups(Array.isArray(groupsData) ? groupsData : [])
+      })
+      .catch(() => {})
+>>>>>>> recovery-work
   }, [])
 
   const fetchStudents = useCallback(async () => {
@@ -128,7 +137,8 @@ export default function StudentsPage() {
       if (dateTo)   p.created_to   = dateTo
       if (debtors)  p.debtors_only = 'true'
       const { data } = await studentsAPI.list(p)
-      setStudents(data.results || data)
+      const studentsData = data.results || data
+      setStudents(Array.isArray(studentsData) ? studentsData : [])
       if (data.count !== undefined)
         setMeta({ count: data.count, total_pages: data.total_pages || 1 })
     } catch {

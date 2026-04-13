@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { authAPI } from '../utils/api'
-
+import { studentsAPI } from '../utils/api'
 const useAuthStore = create((set, get) => ({
   user: null,
   isAuthenticated: false,
@@ -42,7 +42,15 @@ const useAuthStore = create((set, get) => ({
     const roleArray = Array.isArray(roles) ? roles : [roles]
     return roleArray.includes(user.role)
   },
+  myStudentProfile: async () => {
+    const res = await studentsAPI.me()
 
+    set({
+      student: res.data
+    })
+
+    return res.data
+  },
   isAdmin: () => get().hasRole(['admin', 'super_admin']),
   isSuperAdmin: () => get().hasRole('super_admin'),
   isTeacher: () => get().hasRole(['teacher', 'admin', 'super_admin']),
