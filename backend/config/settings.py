@@ -131,11 +131,9 @@ SIMPLE_JWT = {
 }
 
 # ── CORS ───────────────────────────────────────────────────────────────────────
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost,http://localhost:5173,http://127.0.0.1'
-).split(',')
-CORS_ALLOW_CREDENTIALS = True
+#CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = ["https://dev-platform.uz","https://apicrm.dev-platform.uz"]
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -155,7 +153,10 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://apicrm.dev-platform.uz",
+    "https://dev-platform.uz",
+]
 # ── Static & Media ─────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
