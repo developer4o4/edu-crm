@@ -13,8 +13,8 @@ function PaymentForm({ onSubmit, loading }) {
   const [q,setQ]=useState('')
   const [f,setF]=useState({student:'',group:'',amount:'',payment_type:'cash',month:new Date().toISOString().slice(0,7),description:''})
   const s=(k,v)=>setF(p=>({...p,[k]:v}))
-  useEffect(()=>{if(q.length>=2)studentsAPI.list({search:q,page_size:8}).then(r=>setStudents(r.data.results||r.data))},[q])
-  useEffect(()=>{if(f.student)groupsAPI.list({page_size:100}).then(r=>setGroups(r.data.results||r.data))},[f.student])
+  useEffect(()=>{if(q.length>=2)studentsAPI.list({search:q,page_size:8}).then(r=>{const studentsData=r.data.results||r.data;setStudents(Array.isArray(studentsData)?studentsData:[])})},[q])
+  useEffect(()=>{if(f.student)groupsAPI.list({page_size:100}).then(r=>{const groupsData=r.data.results||r.data;setGroups(Array.isArray(groupsData)?groupsData:[])})},[f.student])
   const submit=e=>{e.preventDefault();if(!f.student||!f.amount){toast.error("Majburiy maydonlar");return};onSubmit({...f,amount:Number(f.amount),month:f.month+'-01'})}
   const inp=(label,props)=>(
     <div style={{display:'flex',flexDirection:'column',gap:'4px'}}>

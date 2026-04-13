@@ -114,8 +114,12 @@ export default function StudentDetailPage() {
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',fontSize:'12px',color:'#6b7280'}}>
                     <span>O'qituvchi: <b style={{color:'#111827'}}>{m.teacher_name||'—'}</b></span>
-                    <span>To'lov: <b style={{color:'#111827'}}>{fmt(m.monthly_fee_discounted)} UZS/oy</b></span>
+                    <span>Telefon: <b style={{color:'#111827'}}>{m.teacher_phone||'—'}</b></span>
                     <span>Jadval: <b style={{color:'#111827'}}>{m.schedule?.day_type}</b></span>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:'8px',fontSize:'12px',color:'#6b7280',marginTop:'10px'}}>
+                    <span>Darslar: <b style={{color:'#111827'}}>{m.lessons_held || 0} ta</b></span>
+                    <span>To'lov sanasi: <b style={{color:'#111827'}}>Har oyning {m.schedule?.payment_day || 1}-si</b></span>
                   </div>
                   {m.discount_percent>0&&<div style={{marginTop:'8px'}}><Badge color="amber">{m.discount_percent}% chegirma</Badge></div>}
                 </div>

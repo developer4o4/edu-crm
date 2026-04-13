@@ -14,11 +14,34 @@ export default function LoginPage() {
 
   const submit = async e => {
     e.preventDefault()
-    if(!form.username||!form.password){toast.error("Barcha maydonlarni to'ldiring");return}
+
+    if (!form.username || !form.password) {
+      toast.error("Barcha maydonlarni to'ldiring")
+      return
+    }
+
     setLoading(true)
-    try { await login(form); toast.success("Xush kelibsiz!"); navigate('/') }
-    catch(err) { toast.error(err.response?.data?.error||"Login yoki parol noto'g'ri") }
-    finally { setLoading(false) }
+
+    try {
+      const res = await login(form)
+
+      const user = res.user
+
+      toast.success("Xush kelibsiz!")
+
+      if (user.role === 'super_admin' || user.role === 'admin') {
+        navigate('/admin')
+      } else if (user.role === 'teacher') {
+        navigate('/teacher')
+      } else {
+        navigate('/student')
+      }
+
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Login yoki parol noto'g'ri")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inp = (type, placeholder, val, onChange, extra={}) => (

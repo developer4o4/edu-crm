@@ -18,6 +18,7 @@ class Course(models.Model):
     class Meta:
         verbose_name = "Kurs"
         verbose_name_plural = "Kurslar"
+        ordering = ['-created_at']
 
 
 class Group(models.Model):

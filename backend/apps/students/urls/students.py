@@ -3,10 +3,9 @@ from rest_framework.routers import DefaultRouter
 from apps.students.views.students import StudentViewSet, TeacherViewSet
 
 router = DefaultRouter()
-router.register('', StudentViewSet, basename='student')
 
-teacher_router = DefaultRouter()
-teacher_router.register('teachers', TeacherViewSet, basename='teacher')
+router.register(r'teachers', TeacherViewSet, basename='teacher')
+router.register(r'', StudentViewSet, basename='student')
 
 urlpatterns = [
     path('', include(router.urls)),

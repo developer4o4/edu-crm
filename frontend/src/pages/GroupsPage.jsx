@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Users, Clock, CreditCard, Eye, MessageSquare, Calendar, BookOpen } from 'lucide-react'
-import { groupsAPI, coursesAPI } from '../utils/api'
+import { groupsAPI, coursesAPI, studentsAPI } from '../utils/api'
 import { Btn, Badge, Spinner, PageHeader, Inp, Sel, C } from '../components/ui/UI'
 import Modal from '../components/ui/Modal'
 import toast from 'react-hot-toast'
@@ -12,6 +12,7 @@ const card = C.card
 
 function GroupForm({ onSubmit, loading }) {
   const [courses, setCourses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [f, setF] = useState({
     name: '',
     course: '',
@@ -33,6 +34,11 @@ function GroupForm({ onSubmit, loading }) {
       .then(r => setCourses(r.data.results || r.data))
   }, []);
 
+  useEffect(() => {
+    studentsAPI.teachers()
+      .then(r => setTeachers(r.data.results || r.data))
+  }, []);
+
   const submit = e => {
     e.preventDefault();
 
@@ -46,8 +52,8 @@ function GroupForm({ onSubmit, loading }) {
     onSubmit({
       ...f,
       teacher: f.teacher || null,
-      start_time,
-      end_time,
+      start_time: f.start_time + ':00',
+      end_time: f.end_time + ':00',
       monthly_fee: Number(f.monthly_fee),
       payment_day: Number(f.payment_day),
       max_students: Number(f.max_students)
@@ -62,14 +68,18 @@ function GroupForm({ onSubmit, loading }) {
           <option value="">Tanlang...</option>
           {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Sel>
+        <Sel label="O'qituvchi" value={f.teacher} onChange={e => s('teacher', e.target.value)}>
+          <option value="">Tanlang...</option>
+          {teachers.map(t => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
+        </Sel>
         <Sel label="Dars kunlari" value={f.day_type} onChange={e => s('day_type', e.target.value)}>
           <option value="odd">Toq kunlar (Du,Cho,Ju)</option>
           <option value="even">Juft kunlar (Se,Pa,Sha)</option>
           <option value="daily">Har kuni</option>
           <option value="weekend">Dam olish kunlari</option>
         </Sel>
-        <Inp label="Boshlanish vaqti" type="time" value="16:00:00" onChange={e => s('start_time', e.target.value)} />
-        <Inp label="Tugash vaqti" type="time" value="18:00:00" onChange={e => s('end_time', e.target.value)} />
+        <Inp label="Boshlanish vaqti" type="time" value={f.start_time} onChange={e => s('start_time', e.target.value)} />
+        <Inp label="Tugash vaqti" type="time" value={f.end_time} onChange={e => s('end_time', e.target.value)} />
         <Inp label="Oylik to'lov (UZS) *" type="number" placeholder="500000" value={f.monthly_fee} onChange={e => s('monthly_fee', e.target.value)} min={0} />
         <Inp label="To'lov sanasi (1-28)" type="number" value={f.payment_day} onChange={e => s('payment_day', e.target.value)} min={1} max={28} />
         <Inp label="Boshlanish sanasi" type="date" value={f.start_date} onChange={e => s('start_date', e.target.value)} />

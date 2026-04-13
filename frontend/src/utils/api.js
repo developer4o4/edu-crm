@@ -79,7 +79,6 @@ api.interceptors.response.use(
 )
 
 export const authAPI = {
-  myStudentProfile: () => api.get('/auth/me/student/'),
   login: (credentials) => api.post('/auth/login/', credentials),
   logout: (refresh) => api.post('/auth/logout/', { refresh }),
   me: () => api.get('/auth/me/'),
@@ -92,6 +91,7 @@ export const dashboardAPI = {
 }
 
 export const studentsAPI = {
+  me: (params) => api.get('/students/me/', { params }),
   list: (params) => api.get('/students/', { params }),
   detail: (id) => api.get(`/students/${id}/`),
   create: (data) => api.post('/students/', data),
@@ -101,6 +101,10 @@ export const studentsAPI = {
   attendance: (id) => api.get(`/students/${id}/attendance/`),
   addToGroup: (id, data) => api.post(`/students/${id}/add_to_group/`, data),
   removeFromGroup: (id, data) => api.post(`/students/${id}/remove_from_group/`, data),
+  teachers: (params) => api.get('/students/teachers/', { params }),
+  createTeacher: (data) => api.post('/students/teachers/', data),
+  updateTeacher: (id, data) => api.patch(`/students/teachers/${id}/`, data),
+  deleteTeacher: (id) => api.delete(`/students/teachers/${id}/`),
 }
 
 export const groupsAPI = {
@@ -117,7 +121,6 @@ export const coursesAPI = {
   list: (params) => api.get('/courses/', { params }),
   create: (data) => api.post('/courses/', data),
   update: (id, data) => api.patch(`/courses/${id}/`, data),
-  delete: (id) => api.delete(`/courses/${id}/`),
 }
 
 export const paymentsAPI = {

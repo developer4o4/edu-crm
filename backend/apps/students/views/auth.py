@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.views import TokenRefreshView
 from django.contrib.auth import authenticate
 from apps.students.models import User
 from apps.students.serializers import UserSerializer
@@ -102,3 +103,21 @@ class ChangePasswordView(APIView):
         request.user.save()
 
         return Response({'message': 'Parol muvaffaqiyatli o\'zgartirildi'})
+
+
+class TokenRefreshView(APIView):
+    """Token refresh"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({'error': 'Refresh token kerak'}, status=400)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            return Response({
+                'access': str(refresh.access_token),
+            })
+        except TokenError:
+            return Response({'error': 'Refresh token yaroqsiz'}, status=400)
