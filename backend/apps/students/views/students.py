@@ -209,15 +209,12 @@ class StudentViewSet(viewsets.ModelViewSet):
         # Login/parol + xush kelibsiz SMS
         username = student.phone.replace('+', '').replace(' ', '')
         password = username[-4:]
-<<<<<<< HEAD
-        message = f"{student.first_name} {student.last_name} Smartcoders o'quv markaziga hush kelibsiz. Platformani foydalanish uchun Login: {username} Parol: {password} Sayt: dev-platform.uz "
-        print("sms ketti")
-=======
+
 
         message = (
             f"{student.first_name} {student.last_name} Smartcoders o'quv markaziga hush kelibsiz. Platformani foydalanish uchun Login: {username} Parol: {password} Sayt: dev-platform.uz"
         )
->>>>>>> recovery-work
+
 
         send_sms_and_log(
             phone=student.phone,
