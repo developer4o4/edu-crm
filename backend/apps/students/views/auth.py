@@ -82,6 +82,22 @@ class MeView(APIView):
         return Response(serializer.errors, status=400)
 
 
+class MyStudentProfileView(APIView):
+    """Logged-in student profile"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from apps.students.models import Student
+        from apps.students.serializers import StudentDetailSerializer
+
+        student = Student.objects.filter(user=request.user).first()
+        if not student:
+            return Response({'error': 'Student topilmadi'}, status=404)
+
+        serializer = StudentDetailSerializer(student)
+        return Response(serializer.data)
+
+
 class ChangePasswordView(APIView):
     """Parolni o'zgartirish"""
     permission_classes = [IsAuthenticated]
