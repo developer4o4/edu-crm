@@ -84,12 +84,8 @@ export default function TeachersPage() {
       if (search) p.search = search
 
       const { data } = await studentsAPI.teachers(p)
-<<<<<<< HEAD
-      setTeachers(data.results || data)
-=======
       const teachersData = data.results || data
       setTeachers(Array.isArray(teachersData) ? teachersData : [])
->>>>>>> recovery-work
       if (data.count !== undefined)
         setMeta({ count: data.count, total_pages: data.total_pages || 1 })
     } catch {

@@ -22,7 +22,6 @@ import ProtectedRoute from './components/ProtectedRoute'
 import RoleRedirect from './components/RoleRedirect'
 
 // (student page bo‘lsa keyin qo‘shasan)
-import StudentProfilePage from './pages/StudentProfilePage'
 
 export default function App() {
   const init = useAuthStore((s) => s.init)
