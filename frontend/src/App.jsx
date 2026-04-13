@@ -18,32 +18,6 @@ import ReportsPage from './pages/ReportsPage'
 import SMSPage from './pages/SMSPage'
 import Course from './pages/CoursesPage'
 
-<<<<<<< HEAD
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuthStore()
-  if (isLoading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '32px', height: '32px', border: '3px solid #1D9E75', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
-  )
-  if (!isAuthenticated) return <Navigate to="/login" replace />
-  return children
-}
-
-function AdminRoute({ children }) {
-  const { isAuthenticated, isLoading, user } = useAuthStore()
-  if (isLoading) return null
-  if (!isAuthenticated) return <Navigate to="/login" replace />
-  // Student roli bo'lsa profil sahifasiga yo'naltir
-  if (user?.role === 'student') return <Navigate to="/profile" replace />
-  return children
-}
-
-export default function App() {
-  const init = useAuthStore(s => s.init)
-  useEffect(() => { init() }, [init])
-=======
 import ProtectedRoute from './components/ProtectedRoute'
 import RoleRedirect from './components/RoleRedirect'
 
@@ -56,7 +30,6 @@ export default function App() {
   useEffect(() => {
     init()
   }, [init])
->>>>>>> recovery-work
 
   return (
     <BrowserRouter>
@@ -70,21 +43,6 @@ export default function App() {
         {/* LOGIN */}
         <Route path="/login" element={<LoginPage />} />
 
-<<<<<<< HEAD
-        {/* O'quvchi profil sahifasi */}
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <StudentProfilePage />
-          </ProtectedRoute>
-        } />
-
-        {/* Admin/Teacher panel */}
-        <Route path="/" element={
-          <AdminRoute>
-            <Layout />
-          </AdminRoute>
-        }>
-=======
         {/* ROOT REDIRECT */}
         <Route
           path="/"
@@ -104,7 +62,6 @@ export default function App() {
             </ProtectedRoute>
           }
         >
->>>>>>> recovery-work
           <Route index element={<DashboardPage />} />
           <Route path="students" element={<StudentsPage />} />
           <Route path="students/:id" element={<StudentDetailPage />} />

@@ -114,16 +114,13 @@ export default function StudentsPage() {
   const [page,     setPage]     = useState(1)
 
   useEffect(() => {
-<<<<<<< HEAD
-    groupsAPI.list({ page_size: 100 }).then(({ data }) => setGroups(data.results || data)).catch(() => {})
-=======
+
     groupsAPI.list({ page_size: 100 })
       .then(({ data }) => {
         const groupsData = data.results || data
         setGroups(Array.isArray(groupsData) ? groupsData : [])
       })
       .catch(() => {})
->>>>>>> recovery-work
   }, [])
 
   const fetchStudents = useCallback(async () => {
