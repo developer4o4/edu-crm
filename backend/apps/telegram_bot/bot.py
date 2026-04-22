@@ -407,6 +407,7 @@ def create_bot_application() -> Application:
         fallbacks=[CommandHandler("start", start)],
         per_user=True,
         allow_reentry=True,
+        per_message=True,
     )
 
     app.add_handler(conv_handler)
